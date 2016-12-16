@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <style type="text/css">
+        body
+        {
+            font-family: Arial;
+            font-size: 10pt;
+        }
+    </style>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="http://code.jquery.com/jquery-1.6.4.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?sensor=false&libraries=places"></script>
+    <script type="text/javascript">
+        var source, destination;
+        var directionsDisplay;
+        var directionsService = new google.maps.DirectionsService();
+        google.maps.event.addDomListener(window, 'load', function () {
+            new google.maps.places.SearchBox(document.getElementById('txtSource'));
+            new google.maps.places.SearchBox(document.getElementById('txtDestination'));
+            directionsDisplay = new google.maps.DirectionsRenderer({ 'draggable': true });
+        });
+
+         $('#asd').change(function () {
+            var selectedText = $(this).find("option:selected").text();
+            console.log("ih");
+            console.log(selectedText);
+            });
+
+        function GetRoute() {
+        	// Get value from selectbox
+        	var selectedText = $("#mode").find("option:selected").text();
+        	
+            var initialMapLatLong = new google.maps.LatLng(23.5204,87.3119);
+            var mapOptions = {
+                zoom: 7,
+                center: initialMapLatLong
+            };
+            map = new google.maps.Map(document.getElementById('dvMap'), mapOptions);
+            directionsDisplay.setMap(map);
+            directionsDisplay.setPanel(document.getElementById('dvPanel'));
+
+            //*********DIRECTIONS AND ROUTE**********************//
+            source = document.getElementById("txtSource").value;
+            destination = document.getElementById("txtDestination").value;
+          
+
+          	var travelModeString = selectedText;
+          	console.log(travelModeString);
+            var request = {
+                origin: source,
+                destination: destination,
+                travelMode: google.maps.TravelMode[travelModeString]
+            };
+            directionsService.route(request, function (response, status) {
+                if (status == google.maps.DirectionsStatus.OK) {
+                    directionsDisplay.setDirections(response);
+                }
+            });
+
+            //*********DISTANCE AND DURATION**********************//
+            var service = new google.maps.DistanceMatrixService();
+            service.getDistanceMatrix({
+                origins: [source],
+                destinations: [destination],
+                travelMode: google.maps.TravelMode[travelModeString],
+                unitSystem: google.maps.UnitSystem.METRIC,
+                avoidHighways: false,
+                avoidTolls: false
+            }, function (response, status) {
+                if (status == google.maps.DistanceMatrixStatus.OK && response.rows[0].elements[0].status != "ZERO_RESULTS") {
+                    var distance = response.rows[0].elements[0].distance.text;
+                    var duration = response.rows[0].elements[0].duration.text;
+                    var dvDistance = document.getElementById("dvDistance");
+                    dvDistance.innerHTML = "";
+                    dvDistance.innerHTML += "INDIA: " + distance + "<br />";
+                    dvDistance.innerHTML += "Duration:" + duration;
+
+                } else {
+                    alert("Unable to find the distance via " + travelModeString + " mode");
+                }
+            });
+        }
+    </script>
+   <form class="form-horizontal">
+  <div class="form-group">
+    <label class="control-label col-sm-2" for="source">Source:</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" id="txtSource" placeholder="Enter Source Location"  />
+    </div>
+  </div>
+  <div class="form-group">
+    <label class="control-label col-sm-2" for="Destination">Destination:</label>
+    <div class="col-sm-10"> 
+      <input type="text" class="form-control" id="txtDestination" placeholder="Enter Destination Location" />
+    </div>
+  </div>
+  <div class="form-group">
+	  <label class="control-label col-sm-2" for="mode">Select list:</label>
+	  <div class="col-sm-10"> 
+		  <select class="form-control" id="mode" style="width: 400px">
+		    <option>TRANSIT</option>
+		    <option>DRIVING</option>
+		    <option>BICYCLING</option>
+		    <option>WALKING</option>
+		  </select>
+	   </div>
+	</div>
+    <div class="form-group"> 
+    <div class="col-sm-offset-2 col-sm-10">
+      <button type="button" value="Get Route" onclick="GetRoute()" class="btn btn-success" >GetRoute</button>
+    </div>
+  </div>
+	
+<div class="test"></div>
+    </form>
+      <tr>
+            <td colspan="4">
+                <div id="dvDistance">
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <div id="dvMap" style="width: 500px; height: 500px">
+                </div>
+            </td>
+            <td>
+                <div id="dvPanel" style="width: 500px; height: 500px">
+                </div>
+            </td>
+        </tr>
+    </table>
+    <br />
+</body>
+</html>
